@@ -1,0 +1,11 @@
+{
+  "type": "org.graylog2.inputs.syslog.udp.SyslogUDPInput",
+  "configuration": {
+    "port": 5140,
+    "bind_address": "0.0.0.0",
+    "recv_buffer_size": 262144,
+    "override_source": "",
+    "allow_override_date": true
+  },
+  "title": "syslog UDP"
+}

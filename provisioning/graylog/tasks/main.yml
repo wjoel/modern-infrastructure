@@ -1,0 +1,140 @@
+---
+- name: Install apt-transport-https
+  apt: name=apt-transport-https state=present
+  register: apt_transport_https_installed
+
+- name: Ensure that the Graylog repository is registered
+  when: apt_transport_https_installed|success
+  command: dpkg-query -W graylog-1.3-repository-debian8
+  register: graylog_repository_check
+  failed_when: graylog_repository_check.rc > 1
+  changed_when: graylog_repository_check.rc == 1
+
+- name: Download Graylog repository package
+  when: graylog_repository_check.rc == 1
+  get_url:
+    url="https://packages.graylog2.org/repo/packages/graylog-1.3-repository-debian8_latest.deb"
+    dest="/tmp/graylog-repository.deb"
+
+- name: Install Graylog repository package
+  when: graylog_repository_check.rc == 1
+  apt: deb="/tmp/graylog-repository.deb"
+  register: graylog_repository_installed
+
+- name: Update APT cache
+  when: graylog_repository_installed.changed
+  apt: update_cache=yes
+  register: graylog_repository_updated
+
+- name: Install Graylog server
+  when: graylog_repository_updated|success
+  apt: name=graylog-server state=present
+  register: graylog_server_installed
+
+- name: Enable Graylog server service
+  when: graylog_server_installed|success
+  service: name=graylog-server enabled=yes
+  register: graylog_server_enabled
+
+- name: Install Graylog web
+  when: graylog_repository_updated|success
+  apt: name=graylog-web state=present
+  register: graylog_web_installed
+
+- name: Enable Graylog web service
+  service: name=graylog-web enabled=yes
+  register: graylog_web_enabled
+
+- name: Generate root password hash
+  shell: echo -n {{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20') }} | shasum -a 256 | awk '{ print $1; }'
+  register: root_password_hash
+
+- name: Configure Graylog server
+  when: root_password_hash|success
+  template:
+    src=server.conf
+    dest=/etc/graylog/server/server.conf
+    owner=root
+    group=root
+  register: graylog_server_configured
+
+- name: Restart Graylog server
+  when: (graylog_server_installed|success and graylog_server_configured.changed)
+  service: name=graylog-server state=restarted
+  register: graylog_server_restarted
+
+- name: Configure Graylog web
+  template:
+    src=web.conf
+    dest=/etc/graylog/web/web.conf
+    owner=root
+    group=root
+  register: graylog_web_configured
+
+- name: Restart Graylog web
+  when: (graylog_web_installed|success and graylog_web_configured.changed)
+  service: name=graylog-web state=restarted
+  register: graylog_web_restarted
+
+- name: Wait for Graylog REST API to become available
+  when: graylog_web_restarted|success
+  wait_for:
+    host: "{{ ansible_eth1.ipv4.address }}"
+    port: 12900
+    timeout: 180
+  register: graylog_rest_api_available
+
+- name: Install httplib2 for uri action
+  apt: name=python-httplib2 state=present
+  register: httplib2
+
+- name: Retrieve list of Graylog inputs
+  when: (graylog_rest_api_available|success and httplib2|success)
+  uri:
+    url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
+    method: GET
+    return_content: yes
+    user: admin
+    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+  register: graylog_inputs
+
+- name: Extract names of Graylog inputs
+  when: graylog_inputs|success
+  set_fact:
+    graylog_input_names: "{{ (graylog_inputs.content | from_json).inputs | map(attribute='message_input') | map(attribute='name') | list }}"
+
+- name: Create Graylog syslog TCP input
+  when: (graylog_rest_api_available|success and httplib2|success and ("Syslog TCP" not in graylog_input_names))
+  uri:
+    url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
+    method: POST
+    body: "{{ lookup('file', 'create_syslog_tcp_input.json') }}"
+    HEADER_Content-Type: "application/json"
+    status_code: 201
+    user: admin
+    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+  register: graylog_syslog_tcp_created
+
+- name: Create Graylog syslog UDP input
+  when: (graylog_rest_api_available|success and httplib2|success and ("Syslog UDP" not in graylog_input_names))
+  uri:
+    url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
+    method: POST
+    body: "{{ lookup('file', 'create_syslog_udp_input.json') }}"
+    HEADER_Content-Type: "application/json"
+    status_code: 201
+    user: admin
+    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+  register: graylog_syslog_udp_created
+
+- name: Create Graylog GELF TCP input
+  when: (graylog_rest_api_available|success and httplib2|success and ("GELF TCP" not in graylog_input_names))
+  uri:
+    url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
+    method: POST
+    body: "{{ lookup('file', 'create_gelf_tcp_input.json') }}"
+    status_code: 201
+    HEADER_Content-Type: "application/json"
+    user: admin
+    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+  register: graylog_gelf_tcp_created

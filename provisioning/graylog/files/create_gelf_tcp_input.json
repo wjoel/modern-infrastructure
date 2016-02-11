@@ -1,0 +1,13 @@
+{
+  "type": "org.graylog2.inputs.gelf.tcp.GELFTCPInput",
+  "configuration": {
+    "port": 12201,
+    "bind_address": "0.0.0.0",
+    "recv_buffer_size": 1048576,
+    "max_message_size": 2097152,
+    "override_source": "",
+    "allow_override_date": true,
+    "use_null_delimiter": true
+  },
+  "title": "GELF TCP"
+}

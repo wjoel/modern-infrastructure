@@ -1,0 +1,21 @@
+---
+- name: Install MongoDB
+  apt: name=mongodb state=present
+  register: mongodb_installed
+
+- name: Enable MongoDB
+  service: name=mongodb enabled=yes
+  register: mongodb_enabled
+
+- name: Configure MongoDB
+  when: mongodb_installed|success
+  template:
+    src=mongodb.conf
+    dest=/etc/mongodb.conf
+    owner=root
+    group=root
+  register: mongodb_configured
+
+- name: Restart MongoDB
+  when: mongodb_configured|success
+  service: name=mongodb state=restarted

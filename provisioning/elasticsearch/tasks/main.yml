@@ -1,0 +1,64 @@
+---
+- name: Install the Elasticsearch signing key
+  apt_key: keyserver=pgp.mit.edu id=D27D666CD88E42B4
+  register: elasticsearch_key_added
+
+- name: Add Elasticsearch repository
+  when: elasticsearch_key_added|success
+  apt_repository:
+    repo="deb http://packages.elasticsearch.org/elasticsearch/1.7/debian stable main"
+    state=present
+  register: elasticsearch_repository_added
+
+- debug: msg="{{ elasticsearch_repository_added|skipped }}"
+
+- name: Update APT cache
+  when: elasticsearch_repository_added.changed
+  apt: update_cache=yes
+  register: apt_cache_updated
+
+- name: Install Elasticsearch
+  when: (elasticsearch_repository_added|success and apt_cache_updated|success)
+  apt: name=elasticsearch state=present
+  register: elasticsearch_installed
+
+- name: Install fixed elasticsearch.service file
+  template:
+    src=elasticsearch.service
+    dest=/usr/lib/systemd/system/elasticsearch.service
+    owner=root
+    group=root
+  register: elasticsearch_service_installed
+
+- name: Load new daemon definitions
+  when: elasticsearch_service_installed.changed
+  shell: systemctl daemon-reload
+  register: daemon_reload
+
+- name: Enable Elasticsearch service
+  when: daemon_reload|success
+  service: name=elasticsearch enabled=yes
+  register: elasticsearch_enabled
+
+- name: Install elasticsearch.conf
+  when: elasticsearch_installed|success
+  template:
+    src=elasticsearch.conf
+    dest=/etc/default/elasticsearch
+    owner=root
+    group=root
+  register: elasticsearch_conf_installed
+
+- name: Install elasticsearch.yml
+  when: elasticsearch_installed|success
+  template:
+    src=elasticsearch.yml
+    dest=/etc/elasticsearch/elasticsearch.yml
+    owner=root
+    group=root
+  register: elasticsearch_yml_installed
+
+- name: Restart Elasticsearch
+  when: (elasticsearch_installed|success and (elasticsearch_conf_installed.changed or elasticsearch_yml_installed))
+  service: name=elasticsearch state=restarted
+  register: elasticsearch_restarted
