@@ -1,0 +1,6 @@
+---
+is_server: yes
+is_bootstrap: no
+datacenter: vagrant
+data_dir: /var/consul
+start_join_servers: null

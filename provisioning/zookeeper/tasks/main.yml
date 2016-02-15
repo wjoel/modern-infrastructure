@@ -1,0 +1,34 @@
+---
+- name: Install ZooKeeper
+  apt: name=zookeeper state=present
+  register: zookeeper_installed
+
+- name: Create Zookeeper systemd service
+  template:
+    src: zookeeper.service
+    dest: /etc/systemd/system/zookeeper.service
+  register: zookeeper_service_installed
+
+- name: Set Zookeeper id
+  template:
+    src: myid
+    dest: /var/lib/zookeeper/myid
+  register: zookeeper_id_set
+
+- name: Load new daemon definitions
+  when: zookeeper_service_installed.changed
+  shell: systemctl daemon-reload
+  register: daemon_reload
+
+- name: Enable ZooKeeper
+  when: daemon_reload.changed
+  service: name=zookeeper enabled=yes
+
+- name: Start Zookeeper
+  when: (zookeeper_id_set|success and zookeeper_service_installed|success)
+  service: name=zookeeper state=started
+  register: zookeeper_start
+
+- name: Restart Zookeeper
+  when: (zookeeper_id_set.changed and not zookeeper_start.changed)
+  service: name=zookeeper state=restarted

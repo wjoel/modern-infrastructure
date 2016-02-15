@@ -1,0 +1,6 @@
+---
+- hosts: all
+  become: yes
+
+  roles:
+    - { role: consul, is_server: yes, is_bootstrap: yes }

@@ -4,4 +4,10 @@
 
   roles:
     - graylog
-
+    - { role: consul, is_server: no, start_join_servers: ["192.168.99.99"] }
+    -
+      role: consul-service
+      service_name: "syslog"
+      service_port: 5140
+      address: "{{ ansible_eth1.ipv4.address }}"
+      service_tags: ['master']

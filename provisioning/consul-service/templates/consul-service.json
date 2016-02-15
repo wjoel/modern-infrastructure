@@ -1,0 +1,13 @@
+{
+  "service": {
+    "enableTagOverride": {{ enable_tag_override|to_json }},
+    "name": "{{ service_name }}",
+{% if service_tags is defined and service_tags != None %}
+    "tags": {{ service_tags|to_json }},
+{% endif %}
+{% if service_port is defined and service_port != None %}
+    "port": {{ service_port }},
+{% endif %}
+    "address": "{{ address }}"
+  }
+}

@@ -1,0 +1,19 @@
+[Unit]
+Description=Apache ZooKeeper
+After=network.target
+ConditionPathExists=/etc/zookeeper/conf/zoo.cfg
+ConditionPathExists=/etc/zookeeper/conf/log4j.properties
+ConditionPathExists=/var/lib/zookeeper/myid
+
+[Service]
+Type=simple
+User=zookeeper
+SyslogIdentifier=zookeeper
+WorkingDirectory=/var/lib/zookeeper
+UMask=0027
+Environment="CP=/etc/zookeeper:/usr/share/java/slf4j-log4j12.jar:/usr/share/java/slf4j-api.jar:/usr/share/java/netty.jar:/usr/share/java/log4j.jar:/usr/share/java/jline.jar:/usr/share/java/zookeeper.jar"
+#Environment="JMX=-Dcom.sun.management.jmxremote"
+ExecStart=/usr/bin/java -cp $CP $JMX $IPv6 org.apache.zookeeper.server.quorum.QuorumPeerMain /etc/zookeeper/conf/zoo.cfg
+
+[Install]
+WantedBy=multi-user.target

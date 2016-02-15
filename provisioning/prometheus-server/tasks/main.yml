@@ -1,0 +1,67 @@
+---
+- name: Create Prometheus group
+  group:
+    name: prometheus
+    system: yes
+  register: prometheus_group_created
+
+- name: Create Prometheus user
+  user:
+    name: prometheus
+    system: yes
+    group: prometheus
+  register: prometheus_user_created
+
+- name: Check if Prometheus has been installed
+  stat: path=/opt/prometheus-0.17.0rc2.linux-amd64
+  register: prometheus_installed
+
+- name: Download Prometheus binary
+  when: prometheus_installed.stat.islnk is not defined
+  get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/0.17.0rc2/prometheus-0.17.0rc2.linux-amd64.tar.gz
+    dest: /tmp/prometheus.tar.gz
+  register: prometheus_downloaded
+
+- name: Unpack Prometheus
+  when: (prometheus_downloaded|success and prometheus_installed.stat.islnk is not defined and prometheus_user_created|success and prometheus_group_created|success)
+  unarchive:
+    src: /tmp/prometheus.tar.gz
+    dest: /opt/
+    creates: /opt/prometheus-0.17.0rc2.linux-amd64
+    copy: no
+    owner: prometheus
+    group: prometheus
+  register: prometheus_unpacked
+
+- name: Install Prometheus config
+  when: prometheus_unpacked|success
+  template:
+    src: prometheus.yml
+    dest: /opt/prometheus-0.17.0rc2.linux-amd64/prometheus.yml
+  register: prometheus_configured
+
+- name: Create Prometheus systemd service
+  template:
+    src: prometheus.service
+    dest: /etc/systemd/system/prometheus.service
+  register: prometheus_service_installed
+
+- name: Load new daemon definitions
+  when: prometheus_service_installed.changed
+  shell: systemctl daemon-reload
+  register: daemon_reload
+
+- name: Enable Prometheus service
+  when: (daemon_reload.changed and prometheus_unpacked|success)
+  service: name=prometheus enabled=yes
+  register: prometheus_enabled
+
+- name: Start Prometheus
+  when: (prometheus_configured|success and daemon_reload|success)
+  service: name=prometheus state=started
+  register: prometheus_service_started
+
+- name: Restart Prometheus
+  when: (prometheus_configured.changed and not prometheus_service_started.changed)
+  service: name=prometheus state=restarted
