@@ -1,3 +1,4 @@
 .vagrant/
 provisioning/root_password
 provisioning/web_secret
+provisioning/consul_encrypt_password
