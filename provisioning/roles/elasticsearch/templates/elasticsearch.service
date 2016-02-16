@@ -5,6 +5,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
+Type=simple
 Environment="ES_HOME=/usr/share/elasticsearch" "CONF_DIR=/etc/elasticsearch/" "CONF_FILE=/etc/elasticsearch/elasticsearch.yml" "DATA_DIR=/var/lib/elasticsearch/" "LOG_DIR=/var/log/elasticsearch/" "PID_DIR=/var/run/elasticsearch/"
 EnvironmentFile=-/etc/default/elasticsearch
 
@@ -19,27 +20,15 @@ ExecStart=/usr/share/elasticsearch/bin/elasticsearch \
                                                 -Des.default.config=${CONF_FILE} \
                                                 -Des.default.path.conf=${CONF_DIR}
 
-# Connects standard output to /dev/null
-StandardOutput=null
-
-# Connects standard error to journal
+StandardOutput=journal
 StandardError=journal
-
 # When a JVM receives a SIGTERM signal it exits with code 143
 SuccessExitStatus=143
-
-# Specifies the maximum file descriptor number that can be opened by this process
 LimitNOFILE=65535
-
-# Specifies the maximum number of bytes of memory that may be locked into RAM
-# Set to "infinity" if you use the 'bootstrap.mlockall: true' option
-# in elasticsearch.yml and 'MAX_LOCKED_MEMORY=unlimited' in /etc/default/elasticsearch
-#LimitMEMLOCK=infinity
-
-# Shutdown delay in seconds, before process is tried to be killed with KILL (if configured)
 TimeoutStopSec=20
+Restart=on-failure
+RestartSec=1min
+SyslogIdentifier=elasticsearch
 
 [Install]
 WantedBy=multi-user.target
-
-# Built for elasticsearch-1.7.5 (deb)
