@@ -10,8 +10,6 @@
     state=present
   register: elasticsearch_repository_added
 
-- debug: msg="{{ elasticsearch_repository_added|skipped }}"
-
 - name: Update APT cache
   when: elasticsearch_repository_added.changed
   apt: update_cache=yes
