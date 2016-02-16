@@ -7,14 +7,6 @@
     url: http://www.eu.apache.org/dist/kafka/0.8.2.2/kafka_2.11-0.8.2.2.tgz
     dest: /tmp/kafka.tgz
 
-- name: Unpack Kafka
-  unarchive:
-    src: /tmp/kafka.tgz
-    dest: /opt/
-    creates: /opt/kafka_2.11-0.8.2.2
-    copy: no
-  register: kafka_unpacked
-
 - name: Create Kafka group
   user:
     name: kafka
@@ -25,6 +17,16 @@
     name: kafka
     system: yes
     group: kafka
+
+- name: Unpack Kafka
+  unarchive:
+    src: /tmp/kafka.tgz
+    dest: /opt/
+    creates: /opt/kafka_2.11-0.8.2.2
+    copy: no
+    owner: kafka
+    group: kafka
+  register: kafka_unpacked
 
 - name: Create Kafka systemd service
   template:
@@ -42,6 +44,8 @@
   template:
     src: server.properties
     dest: /opt/kafka_2.11-0.8.2.2/config/server.properties
+    owner: kafka
+    group: kafka
   register: kafka_config_properties
 
 - name: Enable Kafka service
