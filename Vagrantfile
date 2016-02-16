@@ -3,6 +3,22 @@ Vagrant.configure(2) do |config|
   config.vm.box = "debian/jessie64"
   config.vm.box_check_update = false
 
+  config.vm.define "consul" do |consul|
+    consul.vm.hostname = "consul"
+    consul.vm.network "private_network", ip: "192.168.99.99"
+
+    consul.vm.provider "virtualbox" do |virtualbox|
+      virtualbox.customize [ "guestproperty", "set", :id,
+                             "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold",
+                             10000 ]
+      virtualbox.memory = 512
+      virtualbox.cpus = 1
+    end
+
+    consul.vm.provision :ansible do |ansible|
+      ansible.playbook = "provisioning/consul.yml"
+    end
+  end
   config.vm.define "graylog" do |graylog|
     graylog.vm.hostname = "graylog"
     graylog.vm.network "private_network", ip: "192.168.99.2"
@@ -51,23 +67,6 @@ Vagrant.configure(2) do |config|
 
     prometheus.vm.provision :ansible do |ansible|
       ansible.playbook = "provisioning/prometheus.yml"
-    end
-  end
-
-  config.vm.define "consul" do |consul|
-    consul.vm.hostname = "consul"
-    consul.vm.network "private_network", ip: "192.168.99.99"
-
-    consul.vm.provider "virtualbox" do |virtualbox|
-      virtualbox.customize [ "guestproperty", "set", :id,
-                             "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold",
-                             10000 ]
-      virtualbox.memory = 512
-      virtualbox.cpus = 1
-    end
-
-    consul.vm.provision :ansible do |ansible|
-      ansible.playbook = "provisioning/consul.yml"
     end
   end
 end

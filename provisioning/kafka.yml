@@ -3,5 +3,20 @@
   become: yes
 
   roles:
+    - { role: consul, is_server: no, start_join_servers: ["192.168.99.99"] }
     - zookeeper
     - kafka
+    - dnsmasq-consul
+    - rsyslog-graylog
+    -
+      role: consul-service
+      service_name: "zookeeper"
+      service_port: 2181
+      address: "{{ ansible_eth1.ipv4.address }}"
+      service_tags: ['master']
+    -
+      role: consul-service
+      service_name: "kafka"
+      service_port: 9092
+      address: "{{ ansible_eth1.ipv4.address }}"
+      service_tags: ['master']

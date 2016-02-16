@@ -1,0 +1,3 @@
+---
+syslog_port: 5140
+syslog_host: syslog.service.consul
