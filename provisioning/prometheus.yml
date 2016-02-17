@@ -3,7 +3,7 @@
   become: yes
 
   roles:
-    - prometheus-server
+    - { role: prometheus-server, consul_ip_address: "192.168.99.99"}
     - { role: consul, is_server: no, start_join_servers: ["192.168.99.99"] }
     - dnsmasq-consul
     - rsyslog-graylog

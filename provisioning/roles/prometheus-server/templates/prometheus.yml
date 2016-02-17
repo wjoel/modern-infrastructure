@@ -19,3 +19,22 @@ scrape_configs:
 
     target_groups:
       - targets: ['localhost:9090']
+
+{% if consul_ip_address is defined and consul_ip_address != None %}
+  - job_name: 'consul'
+    metrics_path: /metrics
+    scheme: http
+
+    consul_sd_configs:
+      - server: {{ consul_ip_address }}:{{consul_port}}
+      - services:
+          - node-exporter
+
+    relabel_configs:
+      - source_labels: [__meta_consul_service]
+        target_label: 'job'
+      - source_labels: [__meta_consul_node]
+        target_label: instance
+      - source_labels: [__meta_consul_dc]
+        target_label: datacenter
+{% endif %}

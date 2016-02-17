@@ -10,5 +10,6 @@
   "start_join": {{ start_join_servers|to_json }},
 {% endif %}
   "bind_addr": "{{ ansible_eth1.ipv4.address }}",
+  "client_addr": "{{ ansible_eth1.ipv4.address }}",
   "advertise_addr": "{{ ansible_eth1.ipv4.address }}"
 }
