@@ -8,6 +8,7 @@
     - kafka
     - dnsmasq-consul
     - rsyslog-graylog
+    - prometheus-node-exporter
     -
       role: consul-service
       service_name: "zookeeper"

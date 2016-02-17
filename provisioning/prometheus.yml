@@ -7,3 +7,4 @@
     - { role: consul, is_server: no, start_join_servers: ["192.168.99.99"] }
     - dnsmasq-consul
     - rsyslog-graylog
+    - prometheus-node-exporter

@@ -1,0 +1,2 @@
+---
+collectors_enabled: ['conntrack', 'diskstats', 'entropy', 'filefd', 'filesystem', 'loadavg', 'mdadm', 'meminfo', 'netdev', 'netstat', 'stat', 'textfile', 'time', 'vmstat', 'version', 'interrupts', 'lastlogin', 'systemd']

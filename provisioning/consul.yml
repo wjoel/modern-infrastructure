@@ -6,3 +6,4 @@
     - { role: consul, is_server: yes, is_bootstrap: yes }
     - dnsmasq-consul
     - rsyslog-graylog
+    - prometheus-node-exporter

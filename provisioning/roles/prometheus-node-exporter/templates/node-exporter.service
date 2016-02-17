@@ -1,0 +1,18 @@
+[Unit]
+Description=node-exporter
+Requires=network.target
+After=network.target
+
+[Service]
+Type=simple
+PIDFile=/var/run/node-exporter.pid
+User=node_exporter
+Group=node_exporter
+WorkingDirectory=/opt/bin/
+ExecStart=/opt/bin/node_exporter --collectors.enabled={{ collectors_enabled|join(',') }}
+Restart=on-failure
+RestartSec=10s
+SyslogIdentifier=node-exporter
+
+[Install]
+WantedBy=multi-user.target

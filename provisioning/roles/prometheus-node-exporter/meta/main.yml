@@ -1,0 +1,7 @@
+---
+dependencies:
+  -
+    role: consul-service
+    service_name: node-exporter
+    service_port: 9100
+    address: "{{ ansible_eth1.ipv4.address }}"

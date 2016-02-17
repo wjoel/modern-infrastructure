@@ -5,6 +5,7 @@
   roles:
     - graylog
     - { role: consul, is_server: no, start_join_servers: ["192.168.99.99"] }
+    - prometheus-node-exporter
     -
       role: consul-service
       service_name: "syslog"

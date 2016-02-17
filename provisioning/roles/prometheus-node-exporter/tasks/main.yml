@@ -1,0 +1,60 @@
+---
+- name: Create node-exporter group
+  group:
+    name: node_exporter
+    system: yes
+  register: node_exporter_group_created
+
+- name: Create node-exporter user
+  user:
+    name: node_exporter
+    system: yes
+    group: node_exporter
+  register: node_exporter_user_created
+
+- name: Check if node-exporter has been installed
+  stat: path=/opt/bin/node_exporter
+  register: node_exporter_installed
+
+- name: Download node-exporter binary
+  when: node_exporter_installed.stat.islnk is not defined
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/0.12.0rc3/node_exporter-0.12.0rc3.linux-amd64.tar.gz
+    dest: /tmp/node_exporter.tar.gz
+  register: node_exporter_downloaded
+
+- name: Unpack node-exporter
+  when: (node_exporter_downloaded|success and node_exporter_installed.stat.islnk is not defined and node_exporter_user_created|success and node_exporter_group_created|success)
+  unarchive:
+    src: /tmp/node_exporter.tar.gz
+    dest: /opt/bin
+    creates: /opt/bin/node_exporter
+    copy: no
+    owner: node_exporter
+    group: node_exporter
+  register: node_exporter_unpacked
+
+- name: Install node-exporter systemd service
+  template:
+    src: node-exporter.service
+    dest: /etc/systemd/system/node-exporter.service
+  register: node_exporter_service_installed
+
+- name: Load new daemon definitions
+  when: node_exporter_service_installed.changed
+  shell: systemctl daemon-reload
+  register: daemon_reload
+
+- name: Enable node-exporter service
+  when: (daemon_reload.changed and node_exporter_unpacked|success)
+  service: name=node-exporter enabled=yes
+  register: node_exporter_enabled
+
+- name: Start node-exporter
+  when: node_exporter_service_installed|success
+  service: name=node-exporter state=started
+  register: node_exporter_service_started
+
+- name: Restart node-exporter
+  when: (node_exporter_service_installed.changed and not node_exporter_service_started.changed)
+  service: name=node-exporter state=restarted

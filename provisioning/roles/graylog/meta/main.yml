@@ -2,3 +2,20 @@
 dependencies:
   - { role: elasticsearch }
   - { role: mongodb }
+  -
+    role: consul-service
+    service_name: node-exporter
+    service_port: 9100
+    address: "{{ ansible_eth1.ipv4.address }}"
+  -
+    role: consul-service
+    service_name: "syslog"
+    service_port: 5140
+    address: "{{ ansible_eth1.ipv4.address }}"
+    service_tags: ['master']
+  -
+    role: consul-service
+    service_name: "graylog-web"
+    service_port: 9000
+    address: "{{ ansible_eth1.ipv4.address }}"
+    service_tags: ['master']
