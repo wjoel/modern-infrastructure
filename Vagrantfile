@@ -19,6 +19,7 @@ Vagrant.configure(2) do |config|
       ansible.playbook = "provisioning/consul.yml"
     end
   end
+
   config.vm.define "graylog" do |graylog|
     graylog.vm.hostname = "graylog"
     graylog.vm.network "private_network", ip: "192.168.99.2"
