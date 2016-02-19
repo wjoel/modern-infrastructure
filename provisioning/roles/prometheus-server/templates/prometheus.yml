@@ -26,7 +26,7 @@ scrape_configs:
     scheme: http
 
     consul_sd_configs:
-      - server: {{ consul_ip_address }}:{{consul_port}}
+      - server: '{{ consul_ip_address }}:{{consul_port}}'
       - services:
           - node-exporter
 
