@@ -28,7 +28,6 @@
     insertbefore: BOF
 
 - name: Add localhost as DNS server to dhclient
-  when: dnsmasq_enabled|success
   lineinfile:
     line: "prepend domain-name-servers 127.0.0.1;"
     dest: /etc/dhcp/dhclient.conf
