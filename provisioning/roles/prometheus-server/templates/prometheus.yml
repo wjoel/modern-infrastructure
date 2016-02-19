@@ -27,7 +27,7 @@ scrape_configs:
 
     consul_sd_configs:
       - server: '{{ consul_ip_address }}:{{consul_port}}'
-      - services:
+        services:
           - node-exporter
 
     relabel_configs:
