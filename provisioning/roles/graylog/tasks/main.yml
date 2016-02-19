@@ -138,3 +138,15 @@
     user: admin
     password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
   register: graylog_gelf_tcp_created
+
+- name: Create Graylog GELF HTTP input
+  when: (graylog_rest_api_available|success and httplib2|success and ("GELF HTTP" not in graylog_input_names))
+  uri:
+    url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
+    method: POST
+    body: "{{ lookup('file', 'create_gelf_http_input.json') }}"
+    status_code: 201
+    HEADER_Content-Type: "application/json"
+    user: admin
+    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+  register: graylog_gelf_http_created
