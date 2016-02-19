@@ -5,14 +5,13 @@
 
 - name: Configure dnsmasq for Consul
   copy:
-    content: "server=/consul/127.0.0.1#8600\n"
+    content: "server=/consul/{{ ansible_eth1.ipv4.address }}#8600\n"
     dest: /etc/dnsmasq.d/10-consul
     owner: root
     group: root
   register: dnsmasq_configured
 
 - name: Enable dnsmasq service
-  when: dnsmasq_configured|success
   service: name=dnsmasq enabled=yes
   register: dnsmasq_enabled
 
@@ -23,12 +22,12 @@
 - name: Adding localhost as DNS server to running configuration
   when: dnsmasq_enabled|success
   lineinfile:
-    line: "nameserver 127.0.0.1"
+    line: "nameserver {{ ansible_eth1.ipv4.address }}"
     dest: /etc/resolv.conf
     insertbefore: BOF
 
 - name: Add localhost as DNS server to dhclient
   lineinfile:
-    line: "prepend domain-name-servers 127.0.0.1;"
+    line: "prepend domain-name-servers {{ ansible_eth1.ipv4.address }};"
     dest: /etc/dhcp/dhclient.conf
     insertbefore: EOF
