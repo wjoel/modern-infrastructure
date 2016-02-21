@@ -2,6 +2,7 @@
 Vagrant.configure(2) do |config|
   config.vm.box = "debian/jessie64"
   config.vm.box_check_update = false
+  config.vm.synced_folder ".", "/vagrant", disabled: true
 
   config.vm.define "consul" do |consul|
     consul.vm.hostname = "consul"
