@@ -5,7 +5,7 @@
 - name: Download Kafka
   get_url:
     url: http://www.eu.apache.org/dist/kafka/0.8.2.2/kafka_2.11-0.8.2.2.tgz
-    dest: /tmp/kafka.tgz
+    dest: /opt/kafka.tgz
 
 - name: Create Kafka group
   user:
@@ -20,13 +20,12 @@
 
 - name: Unpack Kafka
   unarchive:
-    src: /tmp/kafka.tgz
+    src: /opt/kafka.tgz
     dest: /opt/
     creates: /opt/kafka_2.11-0.8.2.2
     copy: no
     owner: kafka
     group: kafka
-  register: kafka_unpacked
 
 - name: Create Kafka systemd service
   template:
@@ -40,24 +39,15 @@
   register: daemon_reload
 
 - name: Install Kafka server.properties
-  when: kafka_unpacked.changed
   template:
     src: server.properties
     dest: /opt/kafka_2.11-0.8.2.2/config/server.properties
     owner: kafka
     group: kafka
-  register: kafka_config_properties
+  notify: Restart Kafka
 
 - name: Enable Kafka service
-  when: daemon_reload.changed
   service: name=kafka enabled=yes
-  register: kafka_enabled
 
 - name: Start Kafka
-  when: (kafka_config_properties|success and daemon_reload|success)
   service: name=kafka state=started
-  register: kafka_service_started
-
-- name: Restart Kafka
-  when: (kafka_config_properties.changed and not kafka_service_started.changed)
-  service: name=kafka state=restarted

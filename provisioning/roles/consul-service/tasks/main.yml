@@ -5,8 +5,4 @@
     dest: /opt/etc/consul/{{ service_name }}-service.json
     owner: consul
     group: consul
-  register: consul_service_config_created
-
-- name: Restart Consul
-  when: consul_service_config_created.changed
-  service: name=consul state=restarted
+  notify: Restart Consul

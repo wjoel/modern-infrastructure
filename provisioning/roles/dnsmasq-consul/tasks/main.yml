@@ -1,7 +1,6 @@
 ---
 - name: Install dnsmasq
   apt: name=dnsmasq state=present
-  register: dnsmasq_installed
 
 - name: Configure dnsmasq for Consul
   copy:
@@ -9,18 +8,15 @@
     dest: /etc/dnsmasq.d/10-consul
     owner: root
     group: root
-  register: dnsmasq_configured
+  notify: Restart dnsmasq
 
 - name: Enable dnsmasq service
   service: name=dnsmasq enabled=yes
-  register: dnsmasq_enabled
 
-- name: Restart dnsmasq
-  when: dnsmasq_configured.changed and not dnsmasq_enabled.changed
-  service: name=dnsmasq state=restarted
+- name: Start dnsmasq service
+  service: name=dnsmasq state=started
 
 - name: Adding localhost as DNS server to running configuration
-  when: dnsmasq_enabled|success
   lineinfile:
     line: "nameserver {{ ansible_eth1.ipv4.address }}"
     dest: /etc/resolv.conf

@@ -5,8 +5,4 @@
     src: graylog-tcp-forward.conf
     owner: root
     group: root
-  register: graylog_rsyslog_template
-
-- name: Restart rsyslog
-  when: graylog_rsyslog_template.changed
-  service: name=rsyslog state=restarted
+  notify: Restart rsyslog
