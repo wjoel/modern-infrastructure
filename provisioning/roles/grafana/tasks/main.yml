@@ -1,0 +1,91 @@
+---
+- name: Add Package Cloud key
+  apt_key: url=https://packagecloud.io/gpg.key state=present
+
+- name: Install apt-transport-https
+  apt: name=apt-transport-https state=present
+
+- name: Add Grafana repository
+  apt_repository:
+    repo: "deb https://packagecloud.io/grafana/stable/debian/ jessie main"
+    state: present
+  register: grafana_repo_added
+
+- name: Update apt cache
+  when: grafana_repo_added.changed
+  apt: update_cache=yes
+
+- name: Install Grafana
+  apt: name=grafana state=present
+  register: grafana_installed
+
+- name: Configure Grafana
+  template:
+    src: grafana.ini
+    dest: /etc/grafana/grafana.ini
+    owner: root
+    group: grafana
+    mode: "0640"
+  register: grafana_configured
+
+- name: Enable Grafana
+  service: name=grafana-server enabled=yes
+
+- name: Start Grafana
+  service: name=grafana-server state=started
+  register: grafana_server_started
+
+- name: Restart Grafana
+  when: (grafana_installed|success and grafana_configured.changed)
+  service: name=grafana-server state=restarted
+
+- name: Wait for Grafana REST API to become available
+  wait_for:
+    host: "{{ ansible_eth1.ipv4.address }}"
+    port: 3000
+    timeout: 180
+  register: grafana_rest_api_available
+
+- name: Install httplib2 for uri action
+  apt: name=python-httplib2 state=present
+  register: httplib2
+
+- name: Retrieve list of data sources
+  when: (grafana_rest_api_available|success and httplib2|success)
+  uri:
+    url: "http://{{ ansible_eth1.ipv4.address }}:3000/api/datasources"
+    method: GET
+    return_content: yes
+    user: admin
+    password: "{{ lookup('password', 'grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
+    force_basic_auth: yes
+  register: grafana_datasource_names
+
+- name: Extract names of data sources
+  when: grafana_datasource_names|success
+  set_fact:
+    datasources_names: "{{ grafana_datasource_names.content | from_json | map(attribute='name') | list }}"
+
+- name: Create Prometheus datasource
+  when: prometheus_host is defined and prometheus_host != None and httplib2|success and ("prometheus_datasource" not in datasource_names)
+  uri:
+    url: "http://{{ ansible_eth1.ipv4.address }}:3000/api/datasources"
+    method: POST
+    body: "{{ lookup('template', 'create_prometheus_datasource.json', convert_data=False) }}"
+    body_format: json
+    HEADER_Content-Type: "application/json"
+    user: admin
+    password: "{{ lookup('password', 'grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
+    force_basic_auth: yes
+  register: prometheus_datasource_created
+
+- name: Create Prometheus dashboard
+  when: prometheus_host is defined and prometheus_host != None and httplib2|success
+  uri:
+    url: "http://{{ ansible_eth1.ipv4.address }}:3000/api/dashboards/db"
+    method: POST
+    body: "{{ lookup('template', 'dashboard.json', convert_data=False) }}"
+    HEADER_Content-Type: "application/json"
+    user: admin
+    password: "{{ lookup('password', 'grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
+    force_basic_auth: yes

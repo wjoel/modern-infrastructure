@@ -3,3 +3,4 @@ provisioning/root_password
 provisioning/roles/graylog/files/root_password
 provisioning/web_secret
 provisioning/consul_encrypt_password
+provisioning/grafana_password

@@ -1,0 +1,2 @@
+---
+prometheus_host: "{{ ansible_eth1.ipv4.address }}"
