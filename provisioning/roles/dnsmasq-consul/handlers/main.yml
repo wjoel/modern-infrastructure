@@ -1,4 +1,3 @@
 ---
 - name: Restart dnsmasq
-  when: dnsmasq_configured.changed and not dnsmasq_enabled.changed
   service: name=dnsmasq state=restarted

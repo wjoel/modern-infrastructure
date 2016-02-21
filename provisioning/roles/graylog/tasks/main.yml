@@ -75,7 +75,7 @@
     graylog_input_names: "{{ (graylog_inputs.content | from_json).inputs | map(attribute='message_input') | map(attribute='name') | list }}"
 
 - name: Create Graylog syslog TCP input
-  when: (graylog_rest_api_available|success and httplib2|success and ("Syslog TCP" not in graylog_input_names))
+  when: ("Syslog TCP" not in graylog_input_names)
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
     method: POST
@@ -86,7 +86,7 @@
     password: "{{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20')}}"
 
 - name: Create Graylog syslog UDP input
-  when: (graylog_rest_api_available|success and httplib2|success and ("Syslog UDP" not in graylog_input_names))
+  when: ("Syslog UDP" not in graylog_input_names)
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
     method: POST
@@ -97,7 +97,7 @@
     password: "{{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20')}}"
 
 - name: Create Graylog GELF TCP input
-  when: (graylog_rest_api_available|success and httplib2|success and ("GELF TCP" not in graylog_input_names))
+  when: ("GELF TCP" not in graylog_input_names)
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
     method: POST
@@ -108,7 +108,7 @@
     password: "{{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20')}}"
 
 - name: Create Graylog GELF HTTP input
-  when: (graylog_rest_api_available|success and httplib2|success and ("GELF HTTP" not in graylog_input_names))
+  when: ("GELF HTTP" not in graylog_input_names)
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:12900/system/inputs"
     method: POST

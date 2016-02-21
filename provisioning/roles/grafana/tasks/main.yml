@@ -36,7 +36,7 @@
   register: grafana_server_started
 
 - name: Restart Grafana
-  when: (grafana_installed|success and grafana_configured.changed)
+  when: grafana_configured.changed
   service: name=grafana-server state=restarted
 
 - name: Wait for Grafana REST API to become available
@@ -44,14 +44,12 @@
     host: "{{ ansible_eth1.ipv4.address }}"
     port: 3000
     timeout: 180
-  register: grafana_rest_api_available
 
 - name: Install httplib2 for uri action
   apt: name=python-httplib2 state=present
   register: httplib2
 
 - name: Retrieve list of data sources
-  when: (grafana_rest_api_available|success and httplib2|success)
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:3000/api/datasources"
     method: GET
@@ -59,15 +57,14 @@
     user: admin
     password: "{{ lookup('password', playbook_dir + '/passwords/grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
     force_basic_auth: yes
-  register: grafana_datasource_names
+  register: grafana_datasources
 
 - name: Extract names of data sources
-  when: grafana_datasource_names|success
   set_fact:
-    datasources_names: "{{ grafana_datasource_names.content | from_json | map(attribute='name') | list }}"
+    datasource_names: "{{ grafana_datasources.content | from_json | map(attribute='name') | list }}"
 
 - name: Create Prometheus datasource
-  when: prometheus_host is defined and prometheus_host != None and httplib2|success and ("prometheus_datasource" not in datasource_names)
+  when: ("prometheus_datasource" not in datasource_names)
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:3000/api/datasources"
     method: POST
@@ -79,7 +76,6 @@
   register: prometheus_datasource_created
 
 - name: Create Prometheus dashboard
-  when: prometheus_host is defined and prometheus_host != None and httplib2|success
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:3000/api/dashboards/db"
     method: POST
