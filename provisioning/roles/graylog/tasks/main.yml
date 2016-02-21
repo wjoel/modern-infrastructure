@@ -31,7 +31,7 @@
   service: name=graylog-web enabled=yes
 
 - name: Generate root password hash
-  shell: echo -n {{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20') }} | shasum -a 256 | awk '{ print $1; }'
+  shell: echo -n {{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20') }} | shasum -a 256 | awk '{ print $1; }'
   register: root_password_hash
 
 - name: Configure Graylog server
@@ -66,7 +66,7 @@
     method: GET
     return_content: yes
     user: admin
-    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+    password: "{{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20')}}"
   register: graylog_inputs
 
 - name: Extract names of Graylog inputs
@@ -83,7 +83,7 @@
     HEADER_Content-Type: "application/json"
     status_code: 201
     user: admin
-    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+    password: "{{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20')}}"
 
 - name: Create Graylog syslog UDP input
   when: (graylog_rest_api_available|success and httplib2|success and ("Syslog UDP" not in graylog_input_names))
@@ -94,7 +94,7 @@
     HEADER_Content-Type: "application/json"
     status_code: 201
     user: admin
-    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+    password: "{{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20')}}"
 
 - name: Create Graylog GELF TCP input
   when: (graylog_rest_api_available|success and httplib2|success and ("GELF TCP" not in graylog_input_names))
@@ -105,7 +105,7 @@
     status_code: 201
     HEADER_Content-Type: "application/json"
     user: admin
-    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+    password: "{{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20')}}"
 
 - name: Create Graylog GELF HTTP input
   when: (graylog_rest_api_available|success and httplib2|success and ("GELF HTTP" not in graylog_input_names))
@@ -116,4 +116,4 @@
     status_code: 201
     HEADER_Content-Type: "application/json"
     user: admin
-    password: "{{ lookup('password', 'root_password chars=ascii_letters,digits,hexdigits length=20')}}"
+    password: "{{ lookup('password', playbook_dir + '/passwords/graylog_root_password chars=ascii_letters,digits,hexdigits length=20')}}"

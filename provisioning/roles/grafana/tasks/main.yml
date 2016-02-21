@@ -57,7 +57,7 @@
     method: GET
     return_content: yes
     user: admin
-    password: "{{ lookup('password', 'grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
+    password: "{{ lookup('password', playbook_dir + '/passwords/grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
     force_basic_auth: yes
   register: grafana_datasource_names
 
@@ -75,7 +75,7 @@
     body_format: json
     HEADER_Content-Type: "application/json"
     user: admin
-    password: "{{ lookup('password', 'grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
+    password: "{{ lookup('password', playbook_dir + '/passwords/grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
     force_basic_auth: yes
   register: prometheus_datasource_created
 
@@ -87,5 +87,5 @@
     body: "{{ lookup('template', 'dashboard.json', convert_data=False) }}"
     HEADER_Content-Type: "application/json"
     user: admin
-    password: "{{ lookup('password', 'grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
+    password: "{{ lookup('password', playbook_dir + '/passwords/grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
     force_basic_auth: yes

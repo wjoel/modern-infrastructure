@@ -3,7 +3,7 @@
   "server": {{ is_server|to_json }},
   "datacenter": "{{ datacenter }}",
   "data_dir": "{{ data_dir }}",
-  "encrypt": "{{ lookup('password', 'consul_encrypt_password chars=ascii_letters,digits,hexdigits length=22') }}==",
+  "encrypt": "{{ lookup('password', playbook_dir + '/passwords/consul_encrypt_password chars=ascii_letters,digits,hexdigits length=22') }}==",
   "log_level": "INFO",
   "enable_syslog": true,
 {% if start_join_servers is defined and start_join_servers %}
