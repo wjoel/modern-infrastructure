@@ -1,0 +1,2 @@
+[security]
+admin_password = {{ lookup('password', playbook_dir + '/passwords/grafana_password chars=ascii_letters,digits,hexdigits length=20') }}

@@ -21,7 +21,7 @@
 
 - name: Configure Grafana
   template:
-    src: grafana.ini
+    src: grafana.ini.j2
     dest: /etc/grafana/grafana.ini
     owner: root
     group: grafana
@@ -71,8 +71,7 @@
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:3000/api/datasources"
     method: POST
-    body: "{{ lookup('template', 'create_prometheus_datasource.json', convert_data=False) }}"
-    body_format: json
+    body: " {{ lookup('template', role_path + '/templates/create_prometheus_datasource.json.j2', convert_data=False) }}"
     HEADER_Content-Type: "application/json"
     user: admin
     password: "{{ lookup('password', playbook_dir + '/passwords/grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
@@ -84,7 +83,7 @@
   uri:
     url: "http://{{ ansible_eth1.ipv4.address }}:3000/api/dashboards/db"
     method: POST
-    body: "{{ lookup('template', 'dashboard.json', convert_data=False) }}"
+    body: "{{ lookup('template', role_path + '/templates/dashboard.json.j2', convert_data=False) | string }}"
     HEADER_Content-Type: "application/json"
     user: admin
     password: "{{ lookup('password', playbook_dir + '/passwords/grafana_password chars=ascii_letters,digits,hexdigits length=20') }}"
