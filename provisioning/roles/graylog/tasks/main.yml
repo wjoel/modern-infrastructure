@@ -43,6 +43,9 @@
     group=root
   notify: Restart Graylog server
 
+- name: Start Graylog server service
+  service: name=graylog-server state=started
+
 - name: Configure Graylog web
   template:
     src=web.conf
@@ -50,6 +53,9 @@
     owner=root
     group=root
   notify: Restart Graylog web
+
+- name: Start Graylog web service
+  service: name=graylog-web state=started
 
 - name: Install httplib2 for uri action
   apt: name=python-httplib2 state=present
