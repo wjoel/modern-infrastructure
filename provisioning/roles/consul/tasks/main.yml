@@ -24,8 +24,6 @@
 - name: Create /opt/bin
   file:
     path: /opt/bin
-    owner: root
-    group: root
     state: directory
     mode: 0755
 
@@ -52,7 +50,7 @@
 
 - name: Create Consul config
   template:
-    src: config.json
+    src: config.json.j2
     dest: /opt/etc/consul/config.json
     owner: consul
     group: consul
@@ -60,7 +58,7 @@
 
 - name: Create Consul systemd service
   template:
-    src: consul.service
+    src: consul.service.j2
     dest: /etc/systemd/system/consul.service
   register: consul_service_installed
 

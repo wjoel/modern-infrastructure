@@ -29,7 +29,7 @@
 
 - name: Create Kafka systemd service
   template:
-    src: kafka.service
+    src: kafka.service.j2
     dest: /etc/systemd/system/kafka.service
   register: kafka_service_installed
 
@@ -40,7 +40,7 @@
 
 - name: Install Kafka server.properties
   template:
-    src: server.properties
+    src: server.properties.j2
     dest: /opt/kafka_2.11-0.8.2.2/config/server.properties
     owner: kafka
     group: kafka

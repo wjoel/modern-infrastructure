@@ -37,10 +37,8 @@
 - name: Configure Graylog server
   when: root_password_hash|success
   template:
-    src=server.conf
-    dest=/etc/graylog/server/server.conf
-    owner=root
-    group=root
+    src: server.conf.j2
+    dest: /etc/graylog/server/server.conf
   notify: Restart Graylog server
 
 - name: Start Graylog server service
@@ -48,10 +46,8 @@
 
 - name: Configure Graylog web
   template:
-    src=web.conf
-    dest=/etc/graylog/web/web.conf
-    owner=root
-    group=root
+    src: web.conf.j2
+    dest: /etc/graylog/web/web.conf
   notify: Restart Graylog web
 
 - name: Start Graylog web service

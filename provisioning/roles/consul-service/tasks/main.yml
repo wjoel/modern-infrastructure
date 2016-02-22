@@ -1,7 +1,7 @@
 ---
 - name: Create Consul service config
   template:
-    src: consul-service.json
+    src: consul-service.json.j2
     dest: /opt/etc/consul/{{ service_name }}-service.json
     owner: consul
     group: consul

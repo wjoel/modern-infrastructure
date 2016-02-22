@@ -7,8 +7,6 @@
 
 - name: Configure MongoDB
   template:
-    src=mongodb.conf
-    dest=/etc/mongodb.conf
-    owner=root
-    group=root
+    src: mongodb.conf.j2
+    dest: /etc/mongodb.conf
   notify: Restart MongoDB

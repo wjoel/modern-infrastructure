@@ -6,8 +6,6 @@
   copy:
     content: "server=/consul/{{ ansible_eth1.ipv4.address }}#8600\n"
     dest: /etc/dnsmasq.d/10-consul
-    owner: root
-    group: root
   notify: Restart dnsmasq
 
 - name: Enable dnsmasq service
