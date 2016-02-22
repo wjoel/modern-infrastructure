@@ -17,7 +17,7 @@ Vagrant.configure(2) do |config|
     end
 
     consul.vm.provision :ansible do |ansible|
-      ansible.playbook = "provisioning/consul.yml"
+      ansible.playbook = "ansible/consul.yml"
     end
   end
 
@@ -34,7 +34,7 @@ Vagrant.configure(2) do |config|
     end
 
     graylog.vm.provision :ansible do |ansible|
-      ansible.playbook = "provisioning/graylog.yml"
+      ansible.playbook = "ansible/graylog.yml"
     end
   end
 
@@ -51,7 +51,7 @@ Vagrant.configure(2) do |config|
     end
 
     kafka.vm.provision :ansible do |ansible|
-      ansible.playbook = "provisioning/kafka.yml"
+      ansible.playbook = "ansible/kafka.yml"
     end
   end
 
@@ -68,7 +68,7 @@ Vagrant.configure(2) do |config|
     end
 
     prometheus.vm.provision :ansible do |ansible|
-      ansible.playbook = "provisioning/prometheus.yml"
+      ansible.playbook = "ansible/prometheus.yml"
     end
   end
 end

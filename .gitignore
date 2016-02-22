@@ -1,2 +1,2 @@
 .vagrant/
-provisioning/passwords/
+ansible/passwords/
